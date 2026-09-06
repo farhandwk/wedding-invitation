@@ -249,7 +249,7 @@ export default function AdminGuestsPage() {
                   </td>
                   <td className="px-4 py-3 capitalize">
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${guest.spouse === 'groom' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>
-                      {guest.spouse === 'groom' ? '👨 Groom' : '👩 Bride'}
+                      {guest.spouse === 'groom' ? '👨 Pria' : '👩 Wanita'}
                     </span>
                   </td>
                   <td className="px-4 py-3 capitalize">{guest.category}</td>
