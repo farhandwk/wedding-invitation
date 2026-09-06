@@ -26,12 +26,13 @@ export default async function InvitationPage({
     );
   }
 
-  // 2. Ambil semua RSVP & ucapan yang pernah dikirim oleh tamu ini/grup ini
-  const rsvpDocs = await Rsvp.find({ guestId: guestDoc._id })
-    .sort({ createdAt: -1 })
+  const rsvpDocs = await Rsvp.find({
+    wishes: { $exists: true, $ne: '' }, // Hanya ambil RSVP yang memiliki ucapan/doa
+  })
+    .sort({ createdAt: -1 }) // Urutkan dari yang terbaru
     .lean();
 
-  // Serialisasi data MongoDB agar aman dipassing ke Client Component
+  // Serialisasi data MongoDB untuk Client Component
   const guest = JSON.parse(JSON.stringify(guestDoc));
   const initialRsvps = JSON.parse(JSON.stringify(rsvpDocs));
 
@@ -46,7 +47,7 @@ export default async function InvitationPage({
           Romeo &amp; Juliet
         </h1>
         <p className="text-sm text-slate-500">
-          Pihak Mempelai: <span className="font-semibold text-slate-700">{guest.spouse === 'groom' ? 'Groom (Pria)' : 'Bride (Wanita)'}</span>
+          Pihak Mempelai: <span className="font-semibold text-slate-700">{guest.spouse === 'groom' ? 'Pria' : 'Wanita'}</span>
         </p>
 
         <hr className="my-4" />

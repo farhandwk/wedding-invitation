@@ -11,7 +11,7 @@ interface GuestData {
   spouse: SpouseStatus;
   category: GuestCategory;
   isGroup: boolean;
-  maxPax: number;
+  maxPax: number | string;
   attendance: AttendanceStatus;
   groupName?: string;
 }
@@ -99,6 +99,12 @@ export default function AdminGuestsPage() {
     e.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId ? `/api/admin/guests/${editingId}` : '/api/admin/guests';
+
+    // Pastikan maxPax dikirim sebagai angka murni
+    const payload = {
+      ...formData,
+      maxPax: Number(formData.maxPax) || 1,
+    };
 
     try {
       const res = await fetch(url, {
@@ -399,8 +405,8 @@ export default function AdminGuestsPage() {
                     onChange={(e) => setFormData({ ...formData, spouse: e.target.value as SpouseStatus })}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                   >
-                    <option value="groom">Groom (Pria)</option>
-                    <option value="bride">Bride (Wanita)</option>
+                    <option value="groom">Pria</option>
+                    <option value="bride">Wanita</option>
                   </select>
                 </div>
 
@@ -420,13 +426,28 @@ export default function AdminGuestsPage() {
 
               {/* Max Pax */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Batas Maksimal Pax (Pendamping)</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Batas Maksimal Pax (Pendamping)
+                </label>
                 <input
                   type="number"
                   min={1}
                   max={10}
                   value={formData.maxPax}
-                  onChange={(e) => setFormData({ ...formData, maxPax: Number(e.target.value) })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // Jika di-backspace habis, simpan string kosong ''; jika ada angka, hilangkan angka 0 di depan
+                    setFormData({
+                      ...formData,
+                      maxPax: val === '' ? '' : parseInt(val, 10),
+                    });
+                  }}
+                  onBlur={() => {
+                    // Jika kursor keluar dan input kosong atau < 1, kembalikan otomatis ke 1
+                    if (formData.maxPax === '' || Number(formData.maxPax) < 1) {
+                      setFormData((prev) => ({ ...prev, maxPax: 1 }));
+                    }
+                  }}
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
