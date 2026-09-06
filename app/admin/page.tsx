@@ -37,7 +37,7 @@ export default function AdminGuestsPage() {
   const [search, setSearch] = useState<string>('');
   const [hasContactPicker, setHasContactPicker] = useState<boolean>(false);
 
-  // Cek dukungan Contact Picker API di browser (misal Chrome Android)
+  // Cek dukungan Contact Picker API di browser
   useEffect(() => {
     if ('contacts' in navigator && 'ContactsManager' in window) {
       setHasContactPicker(true);
@@ -79,7 +79,6 @@ export default function AdminGuestsPage() {
         const rawName = picked.name?.[0] || '';
         const rawPhone = picked.tel?.[0] || '';
         
-        // Format otomatis ke format 62xxx
         const formattedPhone = rawPhone.replace(/[^0-9]/g, '').replace(/^0/, '62');
 
         setFormData((prev) => ({
@@ -100,7 +99,6 @@ export default function AdminGuestsPage() {
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId ? `/api/admin/guests/${editingId}` : '/api/admin/guests';
 
-    // Pastikan maxPax dikirim sebagai angka murni
     const payload = {
       ...formData,
       maxPax: Number(formData.maxPax) || 1,
@@ -110,7 +108,7 @@ export default function AdminGuestsPage() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json();
@@ -138,33 +136,28 @@ export default function AdminGuestsPage() {
   };
 
   // WA Share Handler
- const handleShareWA = async (guest: GuestData) => {
-  const siteUrl = window.location.origin;
-  const invLink = `${siteUrl}/invitation/${guest.slug}`;
+  const handleShareWA = async (guest: GuestData) => {
+    const siteUrl = window.location.origin;
+    const invLink = `${siteUrl}/invitation/${guest.slug}`;
 
-  if (guest.isGroup) {
-    const targetGroup = guest.groupName || guest.name;
-    const groupText = `Halo rekan-rekan ${targetGroup}, kami mengundang kalian ke acara pernikahan kami. Silakan isi konfirmasi kehadiran pada tautan berikut:\n\n${invLink}`;
+    if (guest.isGroup) {
+      const targetGroup = guest.groupName || guest.name;
+      const groupText = `Halo rekan-rekan ${targetGroup}, kami mengundang kalian ke acara pernikahan kami. Silakan isi konfirmasi kehadiran pada tautan berikut:\n\n${invLink}`;
 
-    // 1. Salin nama grup ke clipboard pengguna
-    try {
-      await navigator.clipboard.writeText(targetGroup);
-    } catch (err) {
-      console.error('Gagal menyalin nama grup:', err);
+      try {
+        await navigator.clipboard.writeText(targetGroup);
+      } catch (err) {
+        console.error('Gagal menyalin nama grup:', err);
+      }
+
+      alert(`Nama grup "${targetGroup}" telah disalin!\n\nSaat WhatsApp terbuka, tekan Ctrl + V pada kolom pencarian untuk menemukan grup.`);
+      window.open(`https://wa.me/?text=${encodeURIComponent(groupText)}`, '_blank');
+    } else {
+      const personalText = `Halo ${guest.name}, kami mengundang Anda untuk hadir di acara pernikahan kami. Mohon konfirmasi kehadiran Anda melalui tautan khusus berikut:\n\n${invLink}`;
+      const targetPhone = guest.phone ? guest.phone : '';
+      window.open(`https://wa.me/${targetPhone}?text=${encodeURIComponent(personalText)}`, '_blank');
     }
-
-    // 2. Beri petunjuk singkat ke admin
-    alert(`Nama grup "${targetGroup}" telah disalin!\n\nSaat WhatsApp terbuka, tekan Ctrl + V pada kolom pencarian untuk menemukan grup.`);
-
-    // 3. Buka WhatsApp Share
-    window.open(`https://wa.me/?text=${encodeURIComponent(groupText)}`, '_blank');
-  } else {
-    // Alur pesan personal
-    const personalText = `Halo ${guest.name}, kami mengundang Anda untuk hadir di acara pernikahan kami. Mohon konfirmasi kehadiran Anda melalui tautan khusus berikut:\n\n${invLink}`;
-    const targetPhone = guest.phone ? guest.phone : '';
-    window.open(`https://wa.me/${targetPhone}?text=${encodeURIComponent(personalText)}`, '_blank');
-  }
-};
+  };
 
   const openCreateModal = () => {
     setEditingId(null);
@@ -189,16 +182,16 @@ export default function AdminGuestsPage() {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto font-sans">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Manajemen Tamu Undangan</h1>
-          <p className="text-sm text-slate-500">Kelola daftar tamu, broadcast WhatsApp, dan tautan unik</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Manajemen Tamu Undangan</h1>
+          <p className="text-xs sm:text-sm text-slate-500">Kelola daftar tamu, broadcast WhatsApp, dan tautan unik</p>
         </div>
         <button
           onClick={openCreateModal}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex items-center justify-center gap-2"
+          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 text-sm"
         >
           <span>+ Tambah Tamu</span>
         </button>
@@ -211,12 +204,71 @@ export default function AdminGuestsPage() {
           placeholder="Cari nama tamu / nama grup..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-80 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+          className="w-full sm:w-80 px-4 py-2.5 sm:py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-base sm:text-sm bg-white"
         />
       </div>
 
-      {/* Table Data */}
-      <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+      {/* TAMPILAN MOBILE (Card View) - Muncul di Layar < md */}
+      <div className="space-y-3 md:hidden">
+        {loading ? (
+          <div className="text-center py-8 text-slate-400 bg-white rounded-xl border p-4 text-sm">Memuat data...</div>
+        ) : filteredGuests.length === 0 ? (
+          <div className="text-center py-8 text-slate-400 bg-white rounded-xl border p-4 text-sm">Belum ada data tamu</div>
+        ) : (
+          filteredGuests.map((guest) => (
+            <div key={guest._id} className="bg-white border rounded-xl p-4 shadow-sm space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base">{guest.name}</h3>
+                  {guest.isGroup && guest.groupName && (
+                    <p className="text-xs text-indigo-600 font-medium">Grup: {guest.groupName}</p>
+                  )}
+                  <p className="text-xs text-slate-400 mt-0.5">{guest.phone || 'Tanpa No HP'}</p>
+                </div>
+                <span className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${guest.isGroup ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                  {guest.isGroup ? 'Grup WA' : 'Personal'}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t text-xs">
+                <span className={`px-2 py-0.5 rounded font-medium ${guest.spouse === 'groom' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>
+                  {guest.spouse === 'groom' ? '👨 Pria' : '👩 Wanita'}
+                </span>
+                <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded capitalize">
+                  {guest.category}
+                </span>
+                <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
+                  Kuota: {guest.maxPax} pax
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                <button
+                  onClick={() => handleShareWA(guest)}
+                  className="flex-1 py-2 px-3 bg-green-100 text-green-700 rounded-lg text-xs font-semibold hover:bg-green-200 flex items-center justify-center gap-1"
+                >
+                  📲 WA
+                </button>
+                <button
+                  onClick={() => openEditModal(guest)}
+                  className="flex-1 py-2 px-3 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-200 flex items-center justify-center gap-1"
+                >
+                  ✏️ Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(guest._id!)}
+                  className="py-2 px-3 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* TAMPILAN DESKTOP (Table View) - Muncul di Layar >= md */}
+      <div className="hidden md:block bg-white border rounded-xl shadow-sm overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50 border-b text-slate-700 uppercase text-xs font-semibold">
             <tr>
@@ -289,33 +341,31 @@ export default function AdminGuestsPage() {
         </table>
       </div>
 
-      {/* Modal Form Modal CRUD */}
+      {/* Modal Form CRUD (Responsif untuk HP) */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-xl max-w-lg w-full p-5 sm:p-6 shadow-xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-lg font-bold text-slate-800">
+              <h2 className="text-base sm:text-lg font-bold text-slate-800">
                 {editingId ? 'Edit Data Tamu' : 'Tambah Tamu Baru'}
               </h2>
-              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 text-lg p-1">✕</button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Button Contact Picker */}
               {hasContactPicker && !editingId && (
                 <button
                   type="button"
                   onClick={handlePickContact}
-                  className="w-full py-2 px-3 bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium rounded-lg text-sm flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-3 bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium rounded-lg text-sm flex items-center justify-center gap-2"
                 >
                   📱 Pilih Kontak dari HP Android
                 </button>
               )}
 
-              {/* Tipe Tamu (Personal / Grup) */}
-              <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-lg border">
-                <label className="text-sm font-medium text-slate-700">Tipe Undangan:</label>
-                <label className="inline-flex items-center text-sm gap-1 cursor-pointer">
+              <div className="flex items-center gap-4 bg-slate-50 p-2.5 rounded-lg border">
+                <label className="text-xs sm:text-sm font-medium text-slate-700">Tipe Undangan:</label>
+                <label className="inline-flex items-center text-xs sm:text-sm gap-1 cursor-pointer">
                   <input
                     type="radio"
                     name="isGroup"
@@ -324,7 +374,7 @@ export default function AdminGuestsPage() {
                   />
                   Personal
                 </label>
-                <label className="inline-flex items-center text-sm gap-1 cursor-pointer">
+                <label className="inline-flex items-center text-xs sm:text-sm gap-1 cursor-pointer">
                   <input
                     type="radio"
                     name="isGroup"
@@ -335,7 +385,6 @@ export default function AdminGuestsPage() {
                 </label>
               </div>
 
-              {/* Nama Tamu / Nama Link */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">
                   {formData.isGroup ? 'Nama Label Link Grup' : 'Nama Tamu Undangan'}
@@ -353,11 +402,10 @@ export default function AdminGuestsPage() {
                       slug: editingId ? formData.slug : generateSlug(name),
                     });
                   }}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
 
-              {/* Tampil Nama Grup khusus jika isGroup true */}
               {formData.isGroup && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Nama Spesifik Grup WhatsApp</label>
@@ -366,12 +414,11 @@ export default function AdminGuestsPage() {
                     placeholder="misal: Grup WA Angkatan 2018"
                     value={formData.groupName || ''}
                     onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
               )}
 
-              {/* Custom Slug */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">URL Slug Custom</label>
                 <input
@@ -379,12 +426,11 @@ export default function AdminGuestsPage() {
                   required
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
                 <span className="text-[10px] text-slate-400">Link: domain.com/invitation/{formData.slug}</span>
               </div>
 
-              {/* Phone */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp (Awali 62)</label>
                 <input
@@ -392,18 +438,17 @@ export default function AdminGuestsPage() {
                   placeholder="6281234567890"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
 
-              {/* Grid Option */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Pihak Mempelai</label>
                   <select
                     value={formData.spouse}
                     onChange={(e) => setFormData({ ...formData, spouse: e.target.value as SpouseStatus })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
                   >
                     <option value="groom">Pria</option>
                     <option value="bride">Wanita</option>
@@ -415,7 +460,7 @@ export default function AdminGuestsPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as GuestCategory })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
                   >
                     <option value="public">Umum / Public</option>
                     <option value="friend">Teman / Friend</option>
@@ -424,7 +469,6 @@ export default function AdminGuestsPage() {
                 </div>
               </div>
 
-              {/* Max Pax */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Batas Maksimal Pax (Pendamping)
@@ -436,36 +480,33 @@ export default function AdminGuestsPage() {
                   value={formData.maxPax}
                   onChange={(e) => {
                     const val = e.target.value;
-                    // Jika di-backspace habis, simpan string kosong ''; jika ada angka, hilangkan angka 0 di depan
                     setFormData({
                       ...formData,
                       maxPax: val === '' ? '' : parseInt(val, 10),
                     });
                   }}
                   onBlur={() => {
-                    // Jika kursor keluar dan input kosong atau < 1, kembalikan otomatis ke 1
                     if (formData.maxPax === '' || Number(formData.maxPax) < 1) {
                       setFormData((prev) => ({ ...prev, maxPax: 1 }));
                     }
                   }}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
 
-              {/* Submit Button */}
               <div className="flex justify-end gap-2 border-t pt-4 mt-6">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 border rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50"
+                  className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 border rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium shadow-sm"
+                  className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium shadow-sm"
                 >
-                  {editingId ? 'Simpan Perubahan' : 'Tambah Tamu'}
+                  {editingId ? 'Simpan' : 'Tambah'}
                 </button>
               </div>
             </form>
