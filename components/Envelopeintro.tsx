@@ -59,7 +59,7 @@ export default function EnvelopeIntro({
 
       {phase !== "done" && (
         <div
-          className={`${serif.className} fixed inset-0 z-50 flex flex-col items-center justify-center`}
+          className={`${serif.className} fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-8 py-8`}
           style={{
             background: WHITE,
             opacity: leaving ? 0 : 1,
@@ -71,7 +71,7 @@ export default function EnvelopeIntro({
           </p>
 
           <div
-            className="flex items-center justify-center w-[400px] h-[300px]"
+            className="flex items-center justify-center w-[100%] h-[150%]"
             style={{
                 backgroundImage: "url('/floral-circle-gold.png')", // file ada di public/ornamen.png
                 backgroundSize: "contain",              // bisa diganti "cover" sesuai kebutuhan
@@ -79,9 +79,9 @@ export default function EnvelopeIntro({
                 backgroundPosition: "center",
             }}
             >
-            <p className={`${script.className} text-2xl`} style={{ color: GOLD }}>
+            {/* <p className={`${script.className} text-2xl`} style={{ color: GOLD }}>
                 Dhimas &amp; Gita
-            </p>
+            </p> */}
             </div>
 
           <div className="text-center text-lg" style={{ color: NAVY }}>

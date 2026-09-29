@@ -15,7 +15,7 @@ export default async function Page({
   const { to } = await searchParams; // contoh: /?to=Bapak%20Andi
   return (
     <EnvelopeIntro guest={to}>
-      <main className="min-h-screen bg-[#FBF8F3] text-[#1F2A48]">
+      <main className="min-h-screen bg-[#FFFFFF] text-[#1F2A48]">
         <section className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
           <p className="text-lg">Undangan Pernikahan</p>
           <h1 className="my-4 text-6xl sm:text-8xl" style={{ ...goldText, fontFamily: "'Pinyon Script', cursive" }}>
