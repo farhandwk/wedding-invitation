@@ -1,7 +1,87 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { GuestCategory, SpouseStatus, AttendanceStatus } from '@/models/Guest';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Users,
+  UserPlus,
+  Search,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  MessageCircle,
+  UserRound,
+  UsersRound,
+  RefreshCw,
+  Smartphone,
+  Link as LinkIcon,
+} from 'lucide-react';
+
+import {
+  GuestCategory,
+  SpouseStatus,
+  AttendanceStatus,
+} from '@/models/Guest';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+
+import {
+  Badge,
+} from '@/components/ui/badge';
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from '@/components/ui/radio-group';
+
+import { Separator } from '@/components/ui/separator';
+
+import { toast } from 'sonner';
 
 interface GuestData {
   _id?: string;
@@ -30,36 +110,42 @@ const initialForm: GuestData = {
 
 export default function AdminGuestsPage() {
   const [guests, setGuests] = useState<GuestData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<GuestData>(initialForm);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [search, setSearch] = useState<string>('');
-  const [hasContactPicker, setHasContactPicker] = useState<boolean>(false);
 
-  // Cek dukungan Contact Picker API di browser
+  const [search, setSearch] = useState('');
+  const [hasContactPicker, setHasContactPicker] = useState(false);
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   useEffect(() => {
     if ('contacts' in navigator && 'ContactsManager' in window) {
       setHasContactPicker(true);
     }
+
     fetchGuests();
   }, []);
 
-  // Fetch semua data tamu
   const fetchGuests = async () => {
     setLoading(true);
+
     try {
       const res = await fetch('/api/admin/guests');
       const json = await res.json();
-      if (json.success) setGuests(json.data);
-    } catch (err) {
-      alert('Gagal mengambil data tamu');
+
+      if (json.success) {
+        setGuests(json.data);
+      }
+    } catch {
+      toast.error('Gagal mengambil data tamu');
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper Auto-generate Slug dari Nama
   const generateSlug = (text: string) => {
     return text
       .toLowerCase()
@@ -68,18 +154,24 @@ export default function AdminGuestsPage() {
       .replace(/^-+|-+$/g, '');
   };
 
-  // Handler Contact Picker API
   const handlePickContact = async () => {
     try {
       const props = ['name', 'tel'];
-      const contacts = await (navigator as any).contacts.select(props, { multiple: false });
-      
+
+      const contacts = await (navigator as any).contacts.select(
+        props,
+        { multiple: false }
+      );
+
       if (contacts && contacts.length > 0) {
         const picked = contacts[0];
+
         const rawName = picked.name?.[0] || '';
         const rawPhone = picked.tel?.[0] || '';
-        
-        const formattedPhone = rawPhone.replace(/[^0-9]/g, '').replace(/^0/, '62');
+
+        const formattedPhone = rawPhone
+          .replace(/[^0-9]/g, '')
+          .replace(/^0/, '62');
 
         setFormData((prev) => ({
           ...prev,
@@ -88,16 +180,19 @@ export default function AdminGuestsPage() {
           phone: formattedPhone,
         }));
       }
-    } catch (err) {
-      console.log('User membatalkan pilihan kontak atau error:', err);
+    } catch {
+      // User membatalkan picker
     }
   };
 
-  // Submit Handler (Create / Update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `/api/admin/guests/${editingId}` : '/api/admin/guests';
+
+    const url = editingId
+      ? `/api/admin/guests/${editingId}`
+      : '/api/admin/guests';
 
     const payload = {
       ...formData,
@@ -107,55 +202,94 @@ export default function AdminGuestsPage() {
     try {
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(payload),
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.message);
 
-      alert(editingId ? 'Tamu berhasil diperbarui!' : 'Tamu berhasil ditambahkan!');
+      if (!res.ok) {
+        throw new Error(json.message);
+      }
+
+      toast.success(
+        editingId
+          ? 'Data tamu berhasil diperbarui'
+          : 'Tamu berhasil ditambahkan'
+      );
+
       closeModal();
       fetchGuests();
     } catch (err: any) {
-      alert(err.message || 'Terjadi kesalahan');
+      toast.error(err.message || 'Terjadi kesalahan');
     }
   };
 
-  // Delete Handler
-  const handleDelete = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus tamu ini?')) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
     try {
-      const res = await fetch(`/api/admin/guests/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setGuests((prev) => prev.filter((g) => g._id !== id));
+      const res = await fetch(
+        `/api/admin/guests/${deleteId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error();
       }
-    } catch (err) {
-      alert('Gagal menghapus data');
+
+      setGuests((prev) =>
+        prev.filter((guest) => guest._id !== deleteId)
+      );
+
+      toast.success('Data tamu berhasil dihapus');
+    } catch {
+      toast.error('Gagal menghapus data tamu');
+    } finally {
+      setDeleteId(null);
     }
   };
 
-  // WA Share Handler
   const handleShareWA = async (guest: GuestData) => {
     const siteUrl = window.location.origin;
-    const invLink = `${siteUrl}/invitation/${guest.slug}`;
+
+    const invLink =
+      `${siteUrl}/invitation/${guest.slug}`;
 
     if (guest.isGroup) {
-      const targetGroup = guest.groupName || guest.name;
-      const groupText = `Halo rekan-rekan ${targetGroup}, kami mengundang kalian ke acara pernikahan kami. Silakan isi konfirmasi kehadiran pada tautan berikut:\n\n${invLink}`;
+      const targetGroup =
+        guest.groupName || guest.name;
+
+      const groupText =
+        `Halo rekan-rekan ${targetGroup}, ` +
+        `kami mengundang kalian ke acara pernikahan kami. ` +
+        `Silakan isi konfirmasi kehadiran pada tautan berikut:\n\n${invLink}`;
 
       try {
         await navigator.clipboard.writeText(targetGroup);
-      } catch (err) {
-        console.error('Gagal menyalin nama grup:', err);
+      } catch {
+        // Ignore clipboard failure
       }
 
-      alert(`Nama grup "${targetGroup}" telah disalin!\n\nSaat WhatsApp terbuka, tekan Ctrl + V pada kolom pencarian untuk menemukan grup.`);
-      window.open(`https://wa.me/?text=${encodeURIComponent(groupText)}`, '_blank');
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(groupText)}`,
+        '_blank'
+      );
     } else {
-      const personalText = `Halo ${guest.name}, kami mengundang Anda untuk hadir di acara pernikahan kami. Mohon konfirmasi kehadiran Anda melalui tautan khusus berikut:\n\n${invLink}`;
-      const targetPhone = guest.phone ? guest.phone : '';
-      window.open(`https://wa.me/${targetPhone}?text=${encodeURIComponent(personalText)}`, '_blank');
+      const personalText =
+        `Halo ${guest.name}, kami mengundang Anda ` +
+        `untuk hadir di acara pernikahan kami. ` +
+        `Mohon konfirmasi kehadiran Anda melalui ` +
+        `tautan khusus berikut:\n\n${invLink}`;
+
+      window.open(
+        `https://wa.me/${guest.phone}?text=${encodeURIComponent(personalText)}`,
+        '_blank'
+      );
     }
   };
 
@@ -174,345 +308,887 @@ export default function AdminGuestsPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
+    setFormData(initialForm);
   };
 
-  const filteredGuests = guests.filter((g) =>
-    g.name.toLowerCase().includes(search.toLowerCase()) ||
-    (g.groupName && g.groupName.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredGuests = useMemo(() => {
+    const keyword = search.toLowerCase();
+
+    return guests.filter((guest) =>
+      guest.name.toLowerCase().includes(keyword) ||
+      guest.groupName?.toLowerCase().includes(keyword)
+    );
+  }, [guests, search]);
+
+  const stats = useMemo(() => {
+    return {
+      total: guests.length,
+
+      personal: guests.filter(
+        (guest) => !guest.isGroup
+      ).length,
+
+      groups: guests.filter(
+        (guest) => guest.isGroup
+      ).length,
+
+      attended: guests.filter(
+        (guest) => guest.attendance === 'attending'
+      ).length,
+    };
+  }, [guests]);
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Manajemen Tamu Undangan</h1>
-          <p className="text-xs sm:text-sm text-slate-500">Kelola daftar tamu, broadcast WhatsApp, dan tautan unik</p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 text-sm"
-        >
-          <span>+ Tambah Tamu</span>
-        </button>
-      </div>
+    <div className="min-h-screen bg-muted/30">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
 
-      {/* Filter & Search */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Cari nama tamu / nama grup..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-80 px-4 py-2.5 sm:py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-base sm:text-sm bg-white"
-        />
-      </div>
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Manajemen Tamu
+            </h1>
 
-      {/* TAMPILAN MOBILE (Card View) - Muncul di Layar < md */}
-      <div className="space-y-3 md:hidden">
-        {loading ? (
-          <div className="text-center py-8 text-slate-400 bg-white rounded-xl border p-4 text-sm">Memuat data...</div>
-        ) : filteredGuests.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 bg-white rounded-xl border p-4 text-sm">Belum ada data tamu</div>
-        ) : (
-          filteredGuests.map((guest) => (
-            <div key={guest._id} className="bg-white border rounded-xl p-4 shadow-sm space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-bold text-slate-800 text-base">{guest.name}</h3>
-                  {guest.isGroup && guest.groupName && (
-                    <p className="text-xs text-indigo-600 font-medium">Grup: {guest.groupName}</p>
-                  )}
-                  <p className="text-xs text-slate-400 mt-0.5">{guest.phone || 'Tanpa No HP'}</p>
-                </div>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${guest.isGroup ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                  {guest.isGroup ? 'Grup WA' : 'Personal'}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 pt-2 border-t text-xs">
-                <span className={`px-2 py-0.5 rounded font-medium ${guest.spouse === 'groom' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>
-                  {guest.spouse === 'groom' ? '👨 Pria' : '👩 Wanita'}
-                </span>
-                <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded capitalize">
-                  {guest.category}
-                </span>
-                <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
-                  Kuota: {guest.maxPax} pax
-                </span>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t">
-                <button
-                  onClick={() => handleShareWA(guest)}
-                  className="flex-1 py-2 px-3 bg-green-100 text-green-700 rounded-lg text-xs font-semibold hover:bg-green-200 flex items-center justify-center gap-1"
-                >
-                  📲 WA
-                </button>
-                <button
-                  onClick={() => openEditModal(guest)}
-                  className="flex-1 py-2 px-3 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-200 flex items-center justify-center gap-1"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(guest._id!)}
-                  className="py-2 px-3 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* TAMPILAN DESKTOP (Table View) - Muncul di Layar >= md */}
-      <div className="hidden md:block bg-white border rounded-xl shadow-sm overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-600">
-          <thead className="bg-slate-50 border-b text-slate-700 uppercase text-xs font-semibold">
-            <tr>
-              <th className="px-4 py-3">Tamu / Grup</th>
-              <th className="px-4 py-3">Pihak</th>
-              <th className="px-4 py-3">Kategori</th>
-              <th className="px-4 py-3">Tipe</th>
-              <th className="px-4 py-3">Kuota</th>
-              <th className="px-4 py-3 text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="text-center py-8 text-slate-400">Memuat data...</td>
-              </tr>
-            ) : filteredGuests.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center py-8 text-slate-400">Belum ada data tamu</td>
-              </tr>
-            ) : (
-              filteredGuests.map((guest) => (
-                <tr key={guest._id} className="hover:bg-slate-50/50">
-                  <td className="px-4 py-3">
-                    <div className="font-semibold text-slate-800">{guest.name}</div>
-                    {guest.isGroup && guest.groupName && (
-                      <div className="text-xs text-indigo-600">Grup: {guest.groupName}</div>
-                    )}
-                    <div className="text-xs text-slate-400">{guest.phone || 'Tanpa No HP'}</div>
-                  </td>
-                  <td className="px-4 py-3 capitalize">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${guest.spouse === 'groom' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>
-                      {guest.spouse === 'groom' ? '👨 Pria' : '👩 Wanita'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 capitalize">{guest.category}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${guest.isGroup ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                      {guest.isGroup ? 'Grup WA' : 'Personal'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">{guest.maxPax} orang</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleShareWA(guest)}
-                        title="Kirim Undangan WA"
-                        className="p-1.5 bg-green-100 text-green-700 rounded hover:bg-green-200"
-                      >
-                        📲 WA
-                      </button>
-                      <button
-                        onClick={() => openEditModal(guest)}
-                        className="p-1.5 bg-amber-100 text-amber-700 rounded hover:bg-amber-200"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(guest._id!)}
-                        className="p-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                      >
-                        🗑️ Hapus
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal Form CRUD (Responsif untuk HP) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-2xl sm:rounded-xl max-w-lg w-full p-5 sm:p-6 shadow-xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-800">
-                {editingId ? 'Edit Data Tamu' : 'Tambah Tamu Baru'}
-              </h2>
-              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 text-lg p-1">✕</button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {hasContactPicker && !editingId && (
-                <button
-                  type="button"
-                  onClick={handlePickContact}
-                  className="w-full py-2.5 px-3 bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium rounded-lg text-sm flex items-center justify-center gap-2"
-                >
-                  📱 Pilih Kontak dari HP Android
-                </button>
-              )}
-
-              <div className="flex items-center gap-4 bg-slate-50 p-2.5 rounded-lg border">
-                <label className="text-xs sm:text-sm font-medium text-slate-700">Tipe Undangan:</label>
-                <label className="inline-flex items-center text-xs sm:text-sm gap-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="isGroup"
-                    checked={!formData.isGroup}
-                    onChange={() => setFormData({ ...formData, isGroup: false })}
-                  />
-                  Personal
-                </label>
-                <label className="inline-flex items-center text-xs sm:text-sm gap-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="isGroup"
-                    checked={formData.isGroup}
-                    onChange={() => setFormData({ ...formData, isGroup: true })}
-                  />
-                  Grup WA
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  {formData.isGroup ? 'Nama Label Link Grup' : 'Nama Tamu Undangan'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder={formData.isGroup ? 'misal: Alumni SMA 1' : 'misal: Budi Santoso'}
-                  value={formData.name}
-                  onChange={(e) => {
-                    const name = e.target.value;
-                    setFormData({
-                      ...formData,
-                      name,
-                      slug: editingId ? formData.slug : generateSlug(name),
-                    });
-                  }}
-                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-
-              {formData.isGroup && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Nama Spesifik Grup WhatsApp</label>
-                  <input
-                    type="text"
-                    placeholder="misal: Grup WA Angkatan 2018"
-                    value={formData.groupName || ''}
-                    onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">URL Slug Custom</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
-                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-                <span className="text-[10px] text-slate-400">Link: domain.com/invitation/{formData.slug}</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp (Awali 62)</label>
-                <input
-                  type="text"
-                  placeholder="6281234567890"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Pihak Mempelai</label>
-                  <select
-                    value={formData.spouse}
-                    onChange={(e) => setFormData({ ...formData, spouse: e.target.value as SpouseStatus })}
-                    className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
-                  >
-                    <option value="groom">Pria</option>
-                    <option value="bride">Wanita</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as GuestCategory })}
-                    className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white"
-                  >
-                    <option value="public">Umum / Public</option>
-                    <option value="friend">Teman / Friend</option>
-                    <option value="family">Keluarga / Family</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  Batas Maksimal Pax (Pendamping)
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={formData.maxPax}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData({
-                      ...formData,
-                      maxPax: val === '' ? '' : parseInt(val, 10),
-                    });
-                  }}
-                  onBlur={() => {
-                    if (formData.maxPax === '' || Number(formData.maxPax) < 1) {
-                      setFormData((prev) => ({ ...prev, maxPax: 1 }));
-                    }
-                  }}
-                  className="w-full px-3 py-2 border rounded-lg text-base sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 border-t pt-4 mt-6">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 border rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium shadow-sm"
-                >
-                  {editingId ? 'Simpan' : 'Tambah'}
-                </button>
-              </div>
-            </form>
+            <p className="text-sm text-muted-foreground">
+              Kelola daftar tamu dan pengiriman undangan WhatsApp.
+            </p>
           </div>
+
+          <Button onClick={openCreateModal}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Tambah Tamu
+          </Button>
         </div>
-      )}
+
+        {/* Summary */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+          <StatCard
+            title="Total Tamu"
+            value={stats.total}
+            icon={<Users className="h-4 w-4" />}
+          />
+
+          <StatCard
+            title="Personal"
+            value={stats.personal}
+            icon={<UserRound className="h-4 w-4" />}
+          />
+
+          <StatCard
+            title="Grup WhatsApp"
+            value={stats.groups}
+            icon={<UsersRound className="h-4 w-4" />}
+          />
+
+          <StatCard
+            title="Hadir"
+            value={stats.attended}
+            icon={<MessageCircle className="h-4 w-4" />}
+          />
+
+        </div>
+
+        {/* Main Content */}
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+              <div>
+                <CardTitle className="text-base">
+                  Daftar Tamu
+                </CardTitle>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {filteredGuests.length} data ditampilkan
+                </p>
+              </div>
+
+              <div className="relative w-full lg:w-80">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Cari nama atau grup..."
+                  className="pl-9"
+                />
+              </div>
+
+            </div>
+          </CardHeader>
+
+          <Separator />
+
+          <CardContent className="p-0">
+
+            {/* Desktop */}
+            <div className="hidden md:block">
+              <Table>
+
+                <TableHeader>
+                  <TableRow>
+
+                    <TableHead className="pl-6">
+                      Tamu
+                    </TableHead>
+
+                    <TableHead>
+                      Pihak
+                    </TableHead>
+
+                    <TableHead>
+                      Kategori
+                    </TableHead>
+
+                    <TableHead>
+                      Tipe
+                    </TableHead>
+
+                    <TableHead>
+                      Kuota
+                    </TableHead>
+
+                    <TableHead>
+                      Kehadiran
+                    </TableHead>
+
+                    <TableHead className="w-[100px] text-right pr-6">
+                      Aksi
+                    </TableHead>
+
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+
+                  {loading ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="h-32 text-center"
+                      >
+                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          Memuat data...
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredGuests.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="h-32 text-center text-muted-foreground"
+                      >
+                        Tidak ada data tamu.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredGuests.map((guest) => (
+
+                      <TableRow key={guest._id}>
+
+                        <TableCell className="pl-6">
+                          <div className="flex flex-col">
+
+                            <span className="font-medium text-foreground">
+                              {guest.name}
+                            </span>
+
+                            {guest.isGroup &&
+                              guest.groupName && (
+                                <span className="text-xs text-muted-foreground">
+                                  {guest.groupName}
+                                </span>
+                              )}
+
+                            {guest.phone && (
+                              <span className="text-xs text-muted-foreground">
+                                {guest.phone}
+                              </span>
+                            )}
+
+                          </div>
+                        </TableCell>
+
+                        <TableCell>
+                          <SpouseBadge
+                            spouse={guest.spouse}
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="capitalize"
+                          >
+                            {guest.category}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell>
+                          {guest.isGroup ? (
+                            <Badge variant="outline">
+                              <UsersRound className="mr-1 h-3 w-3" />
+                              Grup
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">
+                              <UserRound className="mr-1 h-3 w-3" />
+                              Personal
+                            </Badge>
+                          )}
+                        </TableCell>
+
+                        <TableCell>
+                          {guest.maxPax} orang
+                        </TableCell>
+
+                        <TableCell>
+                          <AttendanceBadge
+                            attendance={guest.attendance}
+                          />
+                        </TableCell>
+
+                        <TableCell className="pr-6">
+                          <div className="flex justify-end gap-1">
+
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                handleShareWA(guest)
+                              }
+                              title="Kirim WhatsApp"
+                            >
+                              <MessageCircle className="h-4 w-4 text-green-600" />
+                            </Button>
+
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                openEditModal(guest)
+                              }
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                setDeleteId(guest._id || null)
+                              }
+                              title="Hapus"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+
+                          </div>
+                        </TableCell>
+
+                      </TableRow>
+
+                    ))
+                  )}
+
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile */}
+            <div className="space-y-3 p-4 md:hidden">
+
+              {loading ? (
+                <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Memuat data...
+                </div>
+              ) : filteredGuests.length === 0 ? (
+                <div className="py-10 text-center text-sm text-muted-foreground">
+                  Tidak ada data tamu.
+                </div>
+              ) : (
+                filteredGuests.map((guest) => (
+
+                  <div
+                    key={guest._id}
+                    className="rounded-lg border bg-background p-4"
+                  >
+
+                    <div className="flex items-start justify-between gap-3">
+
+                      <div className="min-w-0">
+
+                        <p className="truncate font-medium">
+                          {guest.name}
+                        </p>
+
+                        {guest.isGroup &&
+                          guest.groupName && (
+                            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                              {guest.groupName}
+                            </p>
+                          )}
+
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {guest.phone || 'Tidak ada nomor'}
+                        </p>
+
+                      </div>
+
+                      <AttendanceBadge
+                        attendance={guest.attendance}
+                      />
+
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <SpouseBadge
+                        spouse={guest.spouse}
+                      />
+
+                      <Badge
+                        variant="secondary"
+                        className="capitalize"
+                      >
+                        {guest.category}
+                      </Badge>
+
+                      <Badge variant="outline">
+                        {guest.isGroup
+                          ? 'Grup WA'
+                          : 'Personal'}
+                      </Badge>
+
+                      <Badge variant="outline">
+                        {guest.maxPax} pax
+                      </Badge>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="flex gap-2">
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() =>
+                          handleShareWA(guest)
+                        }
+                      >
+                        <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
+                        WhatsApp
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          openEditModal(guest)
+                        }
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          setDeleteId(guest._id || null)
+                        }
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+
+                    </div>
+
+                  </div>
+
+                ))
+              )}
+
+            </div>
+
+          </CardContent>
+        </Card>
+
+      </div>
+
+      {/* Create / Edit Dialog */}
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          if (!open) closeModal();
+        }}
+      >
+
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+
+          <DialogHeader>
+            <DialogTitle>
+              {editingId
+                ? 'Edit Data Tamu'
+                : 'Tambah Tamu'}
+            </DialogTitle>
+
+            <DialogDescription>
+              Masukkan informasi tamu untuk kebutuhan
+              undangan dan konfirmasi kehadiran.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
+
+            {/* Contact Picker */}
+            {hasContactPicker && !editingId && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handlePickContact}
+              >
+                <Smartphone className="mr-2 h-4 w-4" />
+                Pilih dari Kontak HP
+              </Button>
+            )}
+
+            {/* Invitation Type */}
+            <div className="space-y-3">
+
+              <Label>
+                Tipe Undangan
+              </Label>
+
+              <RadioGroup
+                value={formData.isGroup ? 'group' : 'personal'}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    isGroup: value === 'group',
+                  })
+                }
+                className="grid grid-cols-2 gap-3"
+              >
+
+                <Label
+                  htmlFor="personal"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 hover:bg-muted/50"
+                >
+                  <RadioGroupItem
+                    value="personal"
+                    id="personal"
+                  />
+
+                  <div>
+                    <p className="text-sm font-medium">
+                      Personal
+                    </p>
+
+                    <p className="text-xs text-muted-foreground">
+                      Satu orang / keluarga
+                    </p>
+                  </div>
+                </Label>
+
+                <Label
+                  htmlFor="group"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 hover:bg-muted/50"
+                >
+                  <RadioGroupItem
+                    value="group"
+                    id="group"
+                  />
+
+                  <div>
+                    <p className="text-sm font-medium">
+                      Grup WA
+                    </p>
+
+                    <p className="text-xs text-muted-foreground">
+                      Undangan melalui grup
+                    </p>
+                  </div>
+                </Label>
+
+              </RadioGroup>
+
+            </div>
+
+            {/* Name */}
+            <div className="space-y-2">
+
+              <Label htmlFor="name">
+                {formData.isGroup
+                  ? 'Nama Label Link'
+                  : 'Nama Tamu'}
+              </Label>
+
+              <Input
+                id="name"
+                required
+                placeholder={
+                  formData.isGroup
+                    ? 'Contoh: Alumni SMA 1'
+                    : 'Contoh: Budi Santoso'
+                }
+                value={formData.name}
+                onChange={(e) => {
+                  const name = e.target.value;
+
+                  setFormData({
+                    ...formData,
+                    name,
+                    slug: editingId
+                      ? formData.slug
+                      : generateSlug(name),
+                  });
+                }}
+              />
+
+            </div>
+
+            {/* Group Name */}
+            {formData.isGroup && (
+              <div className="space-y-2">
+
+                <Label htmlFor="groupName">
+                  Nama Grup WhatsApp
+                </Label>
+
+                <Input
+                  id="groupName"
+                  placeholder="Contoh: Grup WA Angkatan 2018"
+                  value={formData.groupName || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      groupName: e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+            )}
+
+            {/* Slug */}
+            <div className="space-y-2">
+
+              <Label htmlFor="slug">
+                URL Slug
+              </Label>
+
+              <div className="relative">
+                <LinkIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                <Input
+                  id="slug"
+                  required
+                  className="pl-9"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      slug: generateSlug(
+                        e.target.value
+                      ),
+                    })
+                  }
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                /invitation/{formData.slug}
+              </p>
+
+            </div>
+
+            {/* Phone */}
+            <div className="space-y-2">
+
+              <Label htmlFor="phone">
+                Nomor WhatsApp
+              </Label>
+
+              <Input
+                id="phone"
+                placeholder="6281234567890"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    phone: e.target.value,
+                  })
+                }
+              />
+
+              <p className="text-xs text-muted-foreground">
+                Gunakan format internasional, contoh 62812...
+              </p>
+
+            </div>
+
+            {/* Spouse + Category */}
+            <div className="grid grid-cols-2 gap-4">
+
+              <div className="space-y-2">
+                <Label>Pihak Mempelai</Label>
+
+                <Select
+                  value={formData.spouse}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      spouse:
+                        value as SpouseStatus,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="groom">
+                      Pria
+                    </SelectItem>
+
+                    <SelectItem value="bride">
+                      Wanita
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Kategori</Label>
+
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      category:
+                        value as GuestCategory,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="public">
+                      Umum
+                    </SelectItem>
+
+                    <SelectItem value="friend">
+                      Teman
+                    </SelectItem>
+
+                    <SelectItem value="family">
+                      Keluarga
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+            </div>
+
+            {/* Pax */}
+            <div className="space-y-2">
+
+              <Label htmlFor="maxPax">
+                Batas Maksimal Pax
+              </Label>
+
+              <Input
+                id="maxPax"
+                type="number"
+                min={1}
+                max={10}
+                value={formData.maxPax}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  setFormData({
+                    ...formData,
+                    maxPax:
+                      value === ''
+                        ? ''
+                        : parseInt(value, 10),
+                  });
+                }}
+              />
+
+              <p className="text-xs text-muted-foreground">
+                Jumlah maksimal orang yang dapat
+                dikonfirmasi pada undangan.
+              </p>
+
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeModal}
+              >
+                Batal
+              </Button>
+
+              <Button type="submit">
+                {editingId
+                  ? 'Simpan Perubahan'
+                  : 'Tambah Tamu'}
+              </Button>
+
+            </DialogFooter>
+
+          </form>
+
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null);
+        }}
+      >
+
+        <AlertDialogContent>
+
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Hapus data tamu?
+            </AlertDialogTitle>
+
+            <AlertDialogDescription>
+              Data tamu yang dihapus tidak dapat
+              dikembalikan. Pastikan kamu benar-benar
+              ingin menghapus data ini.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+
+            <AlertDialogCancel>
+              Batal
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Hapus
+            </AlertDialogAction>
+
+          </AlertDialogFooter>
+
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
+  );
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Components                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function StatCard({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center justify-between p-5">
+
+        <div>
+          <p className="text-sm text-muted-foreground">
+            {title}
+          </p>
+
+          <p className="mt-1 text-2xl font-semibold tracking-tight">
+            {value}
+          </p>
+        </div>
+
+        <div className="rounded-lg border bg-muted p-2.5">
+          {icon}
+        </div>
+
+      </CardContent>
+    </Card>
+  );
+}
+
+
+function SpouseBadge({
+  spouse,
+}: {
+  spouse: SpouseStatus;
+}) {
+  return (
+    <Badge variant="outline">
+      {spouse === 'groom'
+        ? 'Pria'
+        : 'Wanita'}
+    </Badge>
+  );
+}
+
+
+function AttendanceBadge({
+  attendance,
+}: {
+  attendance: AttendanceStatus;
+}) {
+  const config = {
+    attending: {
+      label: 'Hadir',
+      className:
+        'border-green-200 bg-green-50 text-green-700',
+    },
+
+    not_attending: {
+      label: 'Tidak Hadir',
+      className:
+        'border-red-200 bg-red-50 text-red-700',
+    },
+
+    uncertain: {
+      label: 'Belum Konfirmasi',
+      className:
+        'border-yellow-200 bg-yellow-50 text-yellow-700',
+    },
+  };
+
+  const current =
+    config[attendance as keyof typeof config] ??
+    config.uncertain;
+
+  return (
+    <Badge
+      variant="outline"
+      className={current.className}
+    >
+      {current.label}
+    </Badge>
   );
 }

@@ -12,8 +12,7 @@ const NAVY = "#2A3555";
 const NAVY_DEEP = "#1F2A48";
 const GOLD = "#B8975A";
 const GOLD_LIGHT = "#D4B87A";
-const CREAM = "#F5EBDD";
-const WHITE = "#FFFFFF"
+const WHITE = "#FFFFFF";
 
 const goldText = {
   backgroundImage: `linear-gradient(120deg, #9A7B45, ${GOLD_LIGHT} 45%, ${GOLD})`,
@@ -27,13 +26,20 @@ export default function EnvelopeIntro({
   children,
 }: {
   guest?: string;
-  children: React.ReactNode; // landing page
+  children: React.ReactNode;
 }) {
   const [phase, setPhase] = useState<Phase>("closed");
 
-  // Lock scroll while the intro is showing
+  // Scroll ke atas saat pertama kali render
   useEffect(() => {
-    document.body.style.overflow = phase === "done" ? "" : "hidden";
+    if (phase === "closed") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+  }, [phase]);
+
+  // Jangan lock scroll, biarkan auto
+  useEffect(() => {
+    document.body.style.overflow = phase === "done" ? "" : "auto";
     return () => {
       document.body.style.overflow = "";
     };
@@ -59,7 +65,7 @@ export default function EnvelopeIntro({
 
       {phase !== "done" && (
         <div
-          className={`${serif.className} fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-8 py-8`}
+          className={`${serif.className} fixed inset-0 z-50 flex flex-col items-center justify-start text-center px-8 py-12 overflow-y-auto`}
           style={{
             background: WHITE,
             opacity: leaving ? 0 : 1,
@@ -70,50 +76,52 @@ export default function EnvelopeIntro({
             Undangan Pernikahan
           </p>
 
-          <div
-            className="flex items-center justify-center w-[100%] h-[150%]"
+          {/* Ornamen fix size */}
+          <img
+            src="/floral-circle-gold.png"
+            alt="Ornamen Dhimas & Gita"
             style={{
-                backgroundImage: "url('/floral-circle-gold.png')", // file ada di public/ornamen.png
-                backgroundSize: "contain",              // bisa diganti "cover" sesuai kebutuhan
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
+              width: "250px",
+              height: "250px",
+              objectFit: "contain",
             }}
-            >
-            {/* <p className={`${script.className} text-2xl`} style={{ color: GOLD }}>
-                Dhimas &amp; Gita
-            </p> */}
-            </div>
+          />
 
           <div className="text-center text-lg" style={{ color: NAVY }}>
-            <p>
-                Desa Gondang RT 1C, RW 1
-            </p>
-            <p>
-                Kecamatan Watumalang
-            </p>
-            <p>
-                Kabupaten Wonosobo 56352
-            </p>
+            <p>Desa Gondang RT 1C, RW 1</p>
+            <p>Kecamatan Watumalang</p>
+            <p>Kabupaten Wonosobo 56352</p>
           </div>
 
           <div className="flex flex-col justify-center items-center mt-8">
             <p className="text-2xl font-extrabold" style={{ color: NAVY, opacity: 0.85 }}>
-                {guest ? `Kepada Yth. ${guest}` : "Kepada Yth. Bapak/Ibu/Saudara"}
+              {guest ? `Kepada Yth. ${guest}` : "Kepada Yth. Bapak/Ibu/Saudara"}
             </p>
             <p className="text-xl font-bold" style={{ color: NAVY, opacity: 0.7 }}>
-                di Tempat
+              di Tempat
             </p>
           </div>
 
-          {/* Envelope */}
-          <div className="mt-4"
+          {/* Envelope responsif */}
+          <div
+            className="mt-4"
             style={{
               perspective: 1000,
               transform: leaving ? "scale(5)" : "scale(1)",
               transition: "transform 1000ms cubic-bezier(.6,0,.9,.4)",
             }}
           >
-            <div className="relative h-[200px] w-[300px]" style={{ background: NAVY_DEEP, boxShadow: "0 20px 40px rgba(31,42,72,.35)" }}>
+            <div
+              className="relative"
+              style={{
+                width: "60vw",
+                maxWidth: "320px",
+                height: "15vh",
+                minHeight: "180px",
+                background: NAVY_DEEP,
+                boxShadow: "0 20px 40px rgba(31,42,72,.35)",
+              }}
+            >
               {/* Card sliding out */}
               <div
                 className="absolute inset-x-3 top-2 flex flex-col items-center justify-center"
@@ -133,7 +141,7 @@ export default function EnvelopeIntro({
                 </span>
               </div>
 
-              {/* Front pocket (left, right, bottom) */}
+              {/* Front pocket */}
               {[
                 { clip: "polygon(0 0, 100% 50%, 0 100%)", bg: NAVY },
                 { clip: "polygon(100% 0, 0 50%, 100% 100%)", bg: NAVY },
@@ -145,8 +153,12 @@ export default function EnvelopeIntro({
                   style={{ clipPath: p.clip, background: p.bg, zIndex: 20 }}
                 />
               ))}
-              {/* Gold border line on the front */}
-              <div className="pointer-events-none absolute inset-2" style={{ border: `1px solid ${GOLD}`, opacity: 0.6, zIndex: 21 }} />
+
+              {/* Gold border */}
+              <div
+                className="pointer-events-none absolute inset-2"
+                style={{ border: `1px solid ${GOLD}`, opacity: 0.6, zIndex: 21 }}
+              />
 
               {/* Flap */}
               <div
@@ -161,14 +173,14 @@ export default function EnvelopeIntro({
                 }}
               />
 
-              {/* Wax seal / open button */}
+              {/* Wax seal */}
               <button
                 onClick={start}
                 aria-label="Buka undangan"
                 disabled={opened}
-                className="absolute left-[58.5%] z-40 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+                className="absolute left-[61.5%] z-40 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
                 style={{
-                  top: "58%",
+                  top: "50%",
                   marginTop: -28,
                   background: `radial-gradient(circle at 35% 30%, ${GOLD_LIGHT}, ${GOLD} 60%, #9A7B45)`,
                   boxShadow: "0 4px 10px rgba(0,0,0,.35)",
