@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Cormorant_Garamond, Pinyon_Script } from "next/font/google";
+// Pastikan path import ini sesuai dengan lokasi file context Anda
+import { useEnvelope } from "@/src/context/EnvelopeContext"; 
 
 const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "600"] });
 const script = Pinyon_Script({ subsets: ["latin"], weight: "400" });
@@ -29,6 +31,9 @@ export default function EnvelopeIntro({
   children: React.ReactNode;
 }) {
   const [phase, setPhase] = useState<Phase>("closed");
+  
+  // 1. Panggil fungsi setIsOpened dari context
+  const { setIsOpened } = useEnvelope();
 
   // Scroll ke atas saat pertama kali render
   useEffect(() => {
@@ -48,11 +53,20 @@ export default function EnvelopeIntro({
   const start = () => {
     if (phase !== "closed") return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return setPhase("done");
+    
+    if (reduce) {
+      setPhase("done");
+      setIsOpened(true); // 2a. Set true jika user mematikan animasi
+      return;
+    }
+    
     setPhase("open");
     setTimeout(() => setPhase("rise"), 900);
     setTimeout(() => setPhase("leave"), 2100);
-    setTimeout(() => setPhase("done"), 3100);
+    setTimeout(() => {
+      setPhase("done");
+      setIsOpened(true); // 2b. Set true TEPAT saat amplop selesai menghilang
+    }, 3100);
   };
 
   const opened = phase !== "closed";
