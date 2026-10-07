@@ -2,21 +2,12 @@
 
 import Image from 'next/image';
 import React from 'react';
-import { Cormorant_Garamond, Pinyon_Script } from "next/font/google";
+import { serif, script } from '@/src/lib/font';
 
 import { useEnvelope } from "@/src/context/EnvelopeContext"; 
 import floralVertical from "../../src/assets/floral-blue-white-vertical-side.png";
 import QuranFlipbook from '@/components/Quranflipbook';
 
-const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "600", "700"] });
-const script = Pinyon_Script({ subsets: ["latin"], weight: "400" });
-
-const goldText = {
-  backgroundImage: "linear-gradient(120deg, #9A7B45, #D4B87A 45%, #B8975A)",
-  WebkitBackgroundClip: "text",
-  backgroundClip: "text",
-  color: "transparent",
-} as const;
 
 const Quran = () => {
   const { isOpened } = useEnvelope();
