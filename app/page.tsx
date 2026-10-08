@@ -5,6 +5,8 @@ import { EnvelopeProvider } from "@/src/context/EnvelopeContext"
 // PAGES IMPORT
 import Quran from "./pages/quran-1";
 import Person from "./pages/person-2";
+import Location from "./pages/location-3";
+import Countdown from "./pages/countdown-4";
 
 const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "600"] });
 const script = Pinyon_Script({ subsets: ["latin"], weight: "400" });
@@ -28,6 +30,8 @@ export default async function Page({
         <main className=" bg-[#FFFFFF] text-[#1F2A48]">
           <Quran></Quran>
           <Person></Person>
+          <Location></Location>
+          <Countdown></Countdown>
         </main>
       </EnvelopeIntro>
     </EnvelopeProvider>

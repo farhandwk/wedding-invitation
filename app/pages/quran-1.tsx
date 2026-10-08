@@ -44,7 +44,7 @@ const Quran = () => {
         
         {/* TEKS SALAM (Bagian Kiri di Desktop) */}
         <div className="flex flex-col gap-3 lg:gap-6 flex-1 items-center lg:items-start text-center lg:text-left z-10">
-          <h1 className={`${serif.className} text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-[#1F2A48]`}>
+          <h1 className={`${serif.className} text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-navy`}>
             Assalamualaikum Wr. Wb.
           </h1>
           <p className={`${serif.className} text-[0.85rem] sm:text-sm md:text-base lg:text-lg font-normal max-w-[280px] sm:max-w-md lg:max-w-lg leading-relaxed text-[#2A3555] opacity-90`}>
