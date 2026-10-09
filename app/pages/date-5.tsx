@@ -139,22 +139,22 @@ export default function AgendaSection() {
   return (
     <section 
       ref={ref} 
-      className="flex flex-col items-center justify-center py-16 px-4 bg-[#FFFFFF] overflow-hidden"
+      className="flex flex-col items-center justify-center py-16 px-8 bg-[#FFFFFF] overflow-hidden"
     >
       <div 
-        className={`relative w-full max-w-sm md:max-w-md border border-navy/30 rounded-sm p-8 pb-12 transition-all duration-[1500ms] ease-out ${
+        className={`relative w-full max-w-sm md:max-w-md border-2 border-navy/30 rounded-sm p-8 pb-12 transition-all duration-[1500ms] ease-out ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
         }`}
       >
         <Image 
           src={floralVertical}
           alt="Dekorasi"
-          className="absolute -top-12 -right-12 w-32 h-auto rotate-[135deg] pointer-events-none drop-shadow-sm opacity-90"
+          className="absolute -top-8 -right-8 w-36 h-auto rotate-[0deg] pointer-events-none drop-shadow-sm opacity-90"
         />
         <Image 
           src={floralVertical}
           alt="Dekorasi"
-          className="absolute -bottom-12 -left-12 w-32 h-auto -rotate-[45deg] pointer-events-none drop-shadow-sm opacity-90"
+          className="absolute -bottom-8 -left-8 w-36 h-auto -rotate-[180deg] pointer-events-none drop-shadow-sm opacity-90"
         />
 
         <div className="flex flex-row items-center justify-center gap-3 mb-8 z-10 relative">
