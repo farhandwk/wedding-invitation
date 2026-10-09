@@ -7,6 +7,7 @@ import Quran from "./pages/quran-1";
 import Person from "./pages/person-2";
 import Location from "./pages/location-3";
 import Countdown from "./pages/countdown-4";
+import DatePage from "./pages/date-5"
 
 const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "600"] });
 const script = Pinyon_Script({ subsets: ["latin"], weight: "400" });
@@ -32,6 +33,7 @@ export default async function Page({
           <Person></Person>
           <Location></Location>
           <Countdown></Countdown>
+          <DatePage></DatePage>
         </main>
       </EnvelopeIntro>
     </EnvelopeProvider>
