@@ -52,7 +52,7 @@ const Gift = () => {
             <div className={`${baseTransition} ${
                 isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-12"
             }`}>
-                <Image src={giftImg} alt='Gambar Kado' className="w-[200px] sm:w-[250px] h-auto drop-shadow-sm" placeholder='blur'/>
+                <Image src={giftImg} alt='Gambar Kado' className="w-[200px] sm:w-[250px] h-auto" placeholder='blur'/>
             </div>
             
             {/* 2. TEKS JUDUL & DESKRIPSI: Fade In secara berurutan */}
