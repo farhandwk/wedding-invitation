@@ -91,7 +91,6 @@ interface GuestData {
   spouse: SpouseStatus;
   category: GuestCategory;
   isGroup: boolean;
-  maxPax: number | string;
   attendance: AttendanceStatus;
   groupName?: string;
 }
@@ -103,8 +102,7 @@ const initialForm: GuestData = {
   spouse: 'groom',
   category: 'public',
   isGroup: false,
-  maxPax: 2,
-  attendance: 'uncertain',
+  attendance: 'attending',
   groupName: '',
 };
 
@@ -196,7 +194,6 @@ export default function AdminGuestsPage() {
 
     const payload = {
       ...formData,
-      maxPax: Number(formData.maxPax) || 1,
     };
 
     try {
@@ -256,21 +253,33 @@ export default function AdminGuestsPage() {
 
   const handleShareWA = async (guest: GuestData) => {
     const siteUrl = window.location.origin;
+    
+    // Gunakan nama asli (atau nama grup) untuk parameter URL, bukan slug
+    // encodeURIComponent akan otomatis mengubah spasi menjadi %20
+    const targetName = guest.isGroup ? (guest.groupName || guest.name) : guest.name;
+    const invLink = `${siteUrl}/?to=${encodeURIComponent(targetName)}`;
 
-    const invLink =
-      `${siteUrl}/invitation/${guest.slug}`;
+    const createMessage = (nameTarget: string) => {
+      return (
+        "Assalamu’alaikum Warahmatullahi Wabarakatuh / Salam Sejahtera\n\n" +
+        "Bismillahirahmanirrahim.\n\n" +
+        `Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i *${nameTarget}* untuk hadir dan memberikan doa restu pada acara pernikahan kami:\n\n` +
+        "*Dhimas Sasmita Widada & Gita Amellia*\n\n" +
+        "Untuk detail jadwal acara, lokasi, serta konfirmasi kehadiran (RSVP), mohon berkenan untuk membuka tautan undangan digital kami berikut ini:\n" +
+        `👉 ${invLink}\n\n` +
+        "Merupakan suatu kehormatan dan kebahagiaan yang luar biasa bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.\n\n" +
+        "Atas perhatian dan doa restunya, kami ucapkan terima kasih.\n\n" +
+        "Wassalamu’alaikum Warahmatullahi Wabarakatuh\n\n" +
+        "Hormat kami,\n" +
+        "*Dhimas & Gita*"
+      );
+    };
 
     if (guest.isGroup) {
-      const targetGroup =
-        guest.groupName || guest.name;
-
-      const groupText =
-        `Halo rekan-rekan ${targetGroup}, ` +
-        `kami mengundang kalian ke acara pernikahan kami. ` +
-        `Silakan isi konfirmasi kehadiran pada tautan berikut:\n\n${invLink}`;
+      const groupText = createMessage(targetName);
 
       try {
-        await navigator.clipboard.writeText(targetGroup);
+        await navigator.clipboard.writeText(targetName);
       } catch {
         // Ignore clipboard failure
       }
@@ -280,11 +289,7 @@ export default function AdminGuestsPage() {
         '_blank'
       );
     } else {
-      const personalText =
-        `Halo ${guest.name}, kami mengundang Anda ` +
-        `untuk hadir di acara pernikahan kami. ` +
-        `Mohon konfirmasi kehadiran Anda melalui ` +
-        `tautan khusus berikut:\n\n${invLink}`;
+      const personalText = createMessage(targetName);
 
       window.open(
         `https://wa.me/${guest.phone}?text=${encodeURIComponent(personalText)}`,
@@ -446,10 +451,6 @@ export default function AdminGuestsPage() {
                     </TableHead>
 
                     <TableHead>
-                      Kuota
-                    </TableHead>
-
-                    <TableHead>
                       Kehadiran
                     </TableHead>
 
@@ -540,9 +541,6 @@ export default function AdminGuestsPage() {
                           )}
                         </TableCell>
 
-                        <TableCell>
-                          {guest.maxPax} orang
-                        </TableCell>
 
                         <TableCell>
                           <AttendanceBadge
@@ -663,9 +661,6 @@ export default function AdminGuestsPage() {
                           : 'Personal'}
                       </Badge>
 
-                      <Badge variant="outline">
-                        {guest.maxPax} pax
-                      </Badge>
                     </div>
 
                     <Separator className="my-4" />
@@ -998,39 +993,6 @@ export default function AdminGuestsPage() {
                   </SelectContent>
                 </Select>
               </div>
-
-            </div>
-
-            {/* Pax */}
-            <div className="space-y-2">
-
-              <Label htmlFor="maxPax">
-                Batas Maksimal Pax
-              </Label>
-
-              <Input
-                id="maxPax"
-                type="number"
-                min={1}
-                max={10}
-                value={formData.maxPax}
-                onChange={(e) => {
-                  const value = e.target.value;
-
-                  setFormData({
-                    ...formData,
-                    maxPax:
-                      value === ''
-                        ? ''
-                        : parseInt(value, 10),
-                  });
-                }}
-              />
-
-              <p className="text-xs text-muted-foreground">
-                Jumlah maksimal orang yang dapat
-                dikonfirmasi pada undangan.
-              </p>
 
             </div>
 

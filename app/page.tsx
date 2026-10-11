@@ -11,6 +11,8 @@ import DatePage from "./pages/date-5"
 import Gift from "./pages/gift-5";
 import Rsvp from "./pages/rsvp-6";
 
+import { getWishes } from "@/lib/actions";
+
 import Butterfly from "@/components/Butterfly";
 
 const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "600"] });
@@ -23,12 +25,14 @@ const goldText = {
   color: "transparent",
 } as const;
 
+
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ to?: string }>;
 }) {
   const { to } = await searchParams; // contoh: /?to=Bapak%20Andi
+  const wishesData = await getWishes();
   return (
     <EnvelopeProvider>
       <EnvelopeIntro guest={to}>
@@ -41,7 +45,7 @@ export default async function Page({
           <Countdown></Countdown>
           <DatePage></DatePage>
           <Gift></Gift>
-          <Rsvp/>
+          <Rsvp guestName={to} initialWishes={wishesData} />
         </main>
       </EnvelopeIntro>
     </EnvelopeProvider>

@@ -5,7 +5,6 @@ export interface IRsvp extends Document {
   guestId: mongoose.Types.ObjectId;
   responderName: string; // Nama personal yang mengisi RSVP (Budi, Sisi, dll.)
   attendanceStatus: AttendanceStatus;
-  paxCount: number;
   wishes?: string;
   createdAt: Date;
 }
@@ -18,7 +17,6 @@ const RsvpSchema: Schema = new Schema({
     enum: ['attending', 'declining', 'uncertain'], 
     required: true 
   },
-  paxCount: { type: Number, default: 1 },
   wishes: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });

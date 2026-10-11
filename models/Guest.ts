@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export type SpouseStatus = 'groom' | 'bride';
-export type AttendanceStatus = 'attending' | 'declining' | 'uncertain';
+export type AttendanceStatus = 'attending' | 'declining';
 export type GuestCategory = 'public' | 'friend' | 'family';
 
 export interface IGuest extends Document {
@@ -11,7 +11,6 @@ export interface IGuest extends Document {
   spouse: SpouseStatus;
   category: GuestCategory;
   isGroup: boolean;
-  maxPax: number;
   attendance: AttendanceStatus;
   groupName?: string; // Nama Grup WA (misal: "Alumni Angkatan 2018")
   createdAt: Date;
@@ -38,11 +37,10 @@ const GuestSchema: Schema = new Schema({
     required: true
   },
   isGroup: { type: Boolean, default: false },
-  maxPax: { type: Number, default: 2 },
   attendance: {
     type: String,
     enum: {
-      values: ['attending', 'declining', 'uncertain'] satisfies AttendanceStatus[],
+      values: ['attending', 'declining'] satisfies AttendanceStatus[],
       message: "Status Attendance {VALUE} tidak valid!"
     },
     required: true // PERBAIKAN: ejaan 'required'
