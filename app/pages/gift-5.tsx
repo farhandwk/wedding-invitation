@@ -43,7 +43,7 @@ const Gift = () => {
     const baseTransition = "transition-all duration-[1200ms] ease-[cubic-bezier(0.25,0.8,0.25,1)]";
     
     // Variabel Alamat
-    const alamatFisik = "Desa Gondang RT 1C, RW 1, Kecamatan Watumalang, Kabupaten Wonosobo, Jawa Tengah 56352";
+    const alamatFisik = "Desa Gondang RT 1C, RW 1, Kecamatan Watumalang, Kabupaten Wonosobo, Jawa Tengah 56352 (Toko Luwes/Depan Kantor PDAM)";
 
     return (
         <section 
@@ -110,12 +110,12 @@ const Gift = () => {
                     <div className='flex flex-col items-center gap-1 tracking-wide flex-grow justify-center'>
                         <p className="text-sm sm:text-base font-medium opacity-90 text-center">a.n. Gita Amellia</p>
                         <p className="text-xl sm:text-2xl font-bold font-mono tracking-widest text-gold-light text-center">
-                            1234567890 
+                            8955487121 
                         </p>
                     </div>
                     
                     <button 
-                        onClick={() => handleCopy("1234567890", "bca")}
+                        onClick={() => handleCopy("8955487121", "bca")}
                         className={`flex items-center justify-center gap-2 px-4 py-2.5 mt-2 text-sm rounded-sm transition-all duration-300 shadow-md active:scale-95 w-[95%] ${
                             copiedId === "bca" ? "bg-green-600 text-white" : "bg-gold text-white hover:bg-gold-light"
                         }`}
