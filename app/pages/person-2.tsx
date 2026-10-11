@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { serif, script, serif_2 } from '@/src/lib/font';
 import Image from "next/image";
-import Butterfly from '@/components/Butterfly';
 
 import AnimatedLine from '@/components/AnimatedLine';
 
@@ -23,14 +22,14 @@ const persons: PersonItem[] = [
   {
     id: "1",
     name: "Dhimas Sasmita Widada",
-    parents: ["Heru Sutomo", "Emy Rezeki"],
+    parents: ["Heru Sutomo", "Emi Rezeki"],
     home: "Gondang RT 01C, RW 01, Watumalang, Wonosobo, Jawa Tengah",
     img: brideImg
   },
   {
     id: "2",
     name: "Gita Amellia",
-    parents: ["Susanto", "Sartri Antini"],
+    parents: ["Susanto", "Satri Antini"],
     home: "Permata Garden Mangunharjo 2, Tembalang, Semarang, Jawa Tengah",
     img: groomImg
   }
@@ -88,7 +87,6 @@ const AnimatedProfile = ({ p }: { p: PersonItem }) => {
 const Person  = () => {
     return (
         <section className={`${serif.className} text-navy h-auto min-w-[100vw] bg-[#FFFFF] flex flex-col gap-24 items-center justify-center text-center px-6 py-24 text-base overflow-hidden`}>
-          <Butterfly/>
             <h1 className='text-[0.85rem] sm:text-sm md:text-base lg:text-2l font-normal'>Ya Allah.. bersimpuh kami memohon ridha-Mu untuk pernikahan putra-putri kami:</h1>
             <div className='flex flex-col w-full max-w-2xl'>
               {persons.map((p, index) => (

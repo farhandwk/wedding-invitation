@@ -13,7 +13,7 @@ const VERSE = {
     "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari (jenis) dirimu sendiri, agar kamu merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa cinta dan kasih sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir.",
   coverTitle: "القرآن الكريم",
   coverSub: "Ar-Rūm · 30:21",
-  names: "Fulan & Fulanah",
+  names: "Dhimas & Gita",
 };
 
 export default function QuranFlipbook() {

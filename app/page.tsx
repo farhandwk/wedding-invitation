@@ -11,6 +11,8 @@ import DatePage from "./pages/date-5"
 import Gift from "./pages/gift-5";
 import Rsvp from "./pages/rsvp-6";
 
+import Butterfly from "@/components/Butterfly";
+
 const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "600"] });
 const script = Pinyon_Script({ subsets: ["latin"], weight: "400" });
 
@@ -31,6 +33,8 @@ export default async function Page({
     <EnvelopeProvider>
       <EnvelopeIntro guest={to}>
         <main className=" bg-[#FFFFFF] text-[#1F2A48]">
+          <Butterfly theme="navy"/>
+          <Butterfly theme="gold"/>
           <Quran></Quran>
           <Person></Person>
           <Location></Location>
