@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { serif, serif_2 } from "@/src/lib/font";
 import { Send, User, MessageSquareHeart, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { submitRsvp } from "@/lib/actions"; // Sesuaikan path
+import { toast } from "sonner"; // Import toast dari sonner (Shadcn UI)
 
 // Tipe data ucapan untuk TypeScript
 type WishItem = {
@@ -44,25 +45,33 @@ export default function Rsvp({
 
   const baseTransition = "transition-all duration-[1200ms] ease-[cubic-bezier(0.25,0.8,0.25,1)]";
 
-  // Fungsi Submit terhubung ke Database
+  // Fungsi Submit terhubung ke Database dengan try...catch
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setSuccessMsg("");
 
-    const result = await submitRsvp({
-      guestSlug: guestName, // Kita gunakan parameter URL sebagai identifier
-      responderName: formData.responderName,
-      attendanceStatus: formData.attendanceStatus,
-      wishes: formData.wishes,
-    });
+    try {
+      const result = await submitRsvp({
+        guestSlug: guestName,
+        responderName: formData.responderName,
+        attendanceStatus: formData.attendanceStatus,
+        wishes: formData.wishes,
+      });
 
-    setIsLoading(false);
-    if (result.success) {
-      setSuccessMsg("Terima kasih! RSVP & Doa Anda telah tersimpan.");
-      setFormData({ responderName: "", attendanceStatus: "attending", wishes: "" });
-    } else {
-      alert(result.message);
+      if (result.success) {
+        setSuccessMsg("Terima kasih! RSVP & Doa Anda telah tersimpan.");
+        toast.success("RSVP berhasil dikirim!");
+        setFormData({ responderName: "", attendanceStatus: "attending", wishes: "" });
+      } else {
+        toast.error(result.message || "Gagal mengirim RSVP.");
+      }
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      // Tangkapan khusus jika internet terputus atau server mati
+      toast.error("Gagal terhubung ke server. Periksa koneksi internet Anda.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

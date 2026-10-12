@@ -23,6 +23,15 @@ export async function POST(request: Request) {
     await dbConnect();
     const body = await request.json();
 
+    // --- TAMBAHKAN BLOK SANITASI INI ---
+    if (body.phone) {
+      body.phone = body.phone.replace(/[^0-9]/g, '');
+      if (body.phone.startsWith('0')) {
+        body.phone = '62' + body.phone.substring(1);
+      }
+    }
+    // -----------------------------------
+
     // Validasi keunikan Slug
     const existingSlug = await Guest.findOne({ slug: body.slug });
     if (existingSlug) {
@@ -39,9 +48,27 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error: any) {
+    // TANGKAP ERROR DUPLIKAT SLUG (11000)
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.slug) {
+      return NextResponse.json(
+        { success: false, message: 'Gagal: Nama atau Slug ini sudah digunakan oleh tamu lain.' },
+        { status: 400 } // Gunakan 400 Bad Request
+      );
+    }
+
+    // Tangkap error validasi umum dari Mongoose
+    if (error.name === 'ValidationError') {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 400 }
+      );
+    }
+
+    // Error lainnya (Server Error)
+    console.error("API Guest Error:", error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Gagal menambahkan tamu' },
-      { status: 400 }
+      { success: false, message: 'Terjadi kesalahan pada server.' },
+      { status: 500 }
     );
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/dbConnect';
 import Guest from '@/models/Guest';
+import Rsvp from '@/models/Rsvp'
 
 // GET: Ambil Detail 1 Tamu Berdasarkan ID
 export async function GET(
@@ -77,32 +78,39 @@ export async function PUT(
   }
 }
 
-// DELETE: Hapus Tamu
+
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
-    const { id } = await params;
+    // await dbConnect();
+    
+    // Pastikan params di-await jika menggunakan Next.js 15
+    const { id } = await params; 
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: 'Format ID tidak valid' }, { status: 400 });
-    }
-
+    // 1. Hapus Data Tamu (Guest)
     const deletedGuest = await Guest.findByIdAndDelete(id);
 
     if (!deletedGuest) {
-      return NextResponse.json({ success: false, message: 'Tamu tidak ditemukan' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: 'Data tamu tidak ditemukan.' },
+        { status: 404 }
+      );
     }
 
+    // 2. CASCADING DELETE: Hapus semua ucapan/RSVP yang terhubung dengan ID tamu tersebut
+    await Rsvp.deleteMany({ guestId: id });
+
     return NextResponse.json(
-      { success: true, message: 'Tamu berhasil dihapus' },
+      { success: true, message: 'Data tamu beserta data RSVP-nya berhasil dihapus permanen.' },
       { status: 200 }
     );
+    
   } catch (error: any) {
+    console.error("API Delete Guest Error:", error);
     return NextResponse.json(
-      { success: false, message: 'Gagal menghapus tamu', error: error.message },
+      { success: false, message: 'Terjadi kesalahan pada server saat menghapus data.' },
       { status: 500 }
     );
   }

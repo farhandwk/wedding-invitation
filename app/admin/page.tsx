@@ -185,42 +185,41 @@ export default function AdminGuestsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const method = editingId ? 'PUT' : 'POST';
-
-    const url = editingId
-      ? `/api/admin/guests/${editingId}`
-      : '/api/admin/guests';
-
-    const payload = {
-      ...formData,
-    };
+    const url = editingId ? `/api/admin/guests/${editingId}` : '/api/admin/guests';
+    const payload = { ...formData };
 
     try {
       const res = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
+      // 1. Ambil teks mentah terlebih dahulu untuk mencegah error parsing JSON
+      const responseText = await res.text();
+      let json;
 
-      if (!res.ok) {
-        throw new Error(json.message);
+      try {
+        json = JSON.parse(responseText); // Coba ubah ke JSON
+      } catch (parseError) {
+        // Jika gagal di-parse (misal server mengembalikan halaman HTML Error 500)
+        throw new Error("Server mengembalikan respons yang tidak valid.");
       }
 
-      toast.success(
-        editingId
-          ? 'Data tamu berhasil diperbarui'
-          : 'Tamu berhasil ditambahkan'
-      );
+      // 2. Lempar error jika status tidak OK (masuk ke blok catch utama di bawah)
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Gagal memproses data tamu.");
+      }
 
+      // 3. Jika sukses, tampilkan toast dan refresh data
+      toast.success(editingId ? 'Data tamu berhasil diperbarui' : 'Tamu berhasil ditambahkan');
       closeModal();
       fetchGuests();
+
     } catch (err: any) {
-      toast.error(err.message || 'Terjadi kesalahan');
+      // 4. Toast error sekarang dijamin akan selalu muncul
+      toast.error(err.message || 'Terjadi kesalahan jaringan atau server.');
     }
   };
 
@@ -266,7 +265,7 @@ export default function AdminGuestsPage() {
         `Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i *${nameTarget}* untuk hadir dan memberikan doa restu pada acara pernikahan kami:\n\n` +
         "*Dhimas Sasmita Widada & Gita Amellia*\n\n" +
         "Untuk detail jadwal acara, lokasi, serta konfirmasi kehadiran (RSVP), mohon berkenan untuk membuka tautan undangan digital kami berikut ini:\n" +
-        `👉 ${invLink}\n\n` +
+        `${invLink}\n\n` +
         "Merupakan suatu kehormatan dan kebahagiaan yang luar biasa bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir di hari bahagia kami.\n\n" +
         "Atas perhatian dan doa restunya, kami ucapkan terima kasih.\n\n" +
         "Wassalamu’alaikum Warahmatullahi Wabarakatuh\n\n" +
@@ -915,11 +914,20 @@ export default function AdminGuestsPage() {
                 id="phone"
                 placeholder="6281234567890"
                 value={formData.phone}
-                onChange={(e) =>
+                onChange={(e) =>{
+                  // 1. Hapus semua karakter selain angka (termasuk spasi dan tanda +)
+                  let cleanedPhone = e.target.value.replace(/[^0-9]/g, '');
+                  
+                  // 2. Jika nomor diawali angka '0', ganti dengan '62'
+                  if (cleanedPhone.startsWith('0')) {
+                    cleanedPhone = '62' + cleanedPhone.slice(1);
+                  }
+
                   setFormData({
                     ...formData,
-                    phone: e.target.value,
-                  })
+                    phone: cleanedPhone,
+                  });
+                }
                 }
               />
 

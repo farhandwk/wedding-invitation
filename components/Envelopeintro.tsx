@@ -77,13 +77,13 @@ export default function EnvelopeIntro({
 
       {phase !== "done" && (
         <div
-          className={`${serif.className} fixed inset-0 z-50 flex items-center justify-center bg-white overflow-hidden h-[100dvh] w-screen`}
+          className={`${serif.className} fixed inset-0 z-50 flex justify-center bg-white overflow-y-auto w-screen`}
           style={{
             opacity: leaving ? 0 : 1,
             transition: "opacity 900ms ease-in 100ms",
           }}
         >
-          <div className="w-full max-w-lg h-full max-h-[800px] flex flex-col items-center justify-between px-6 pb-12 pt-16 sm:pb-14 sm:pt-20">
+          <div className="w-full max-w-lg h-full min-h-[100dvh] mx-auto flex flex-col items-center justify-center sm:[@media(max-height:500px)]:justify-start gap-12 px-6 pb-12 pt-16 sm:pb-14 sm:pt-20">
             
             {/* --- GRUP ATAS: HEADER, FRAME HORIZONTAL & NAMA TAMU --- */}
             <div className="flex flex-col items-center space-y-6 sm:space-y-8">
@@ -138,6 +138,7 @@ export default function EnvelopeIntro({
 
             {/* --- GRUP TENGAH: AMPLOP 3D --- */}
             <div
+              className="shrink-0 mb-4"
               style={{
                 perspective: 1000,
                 transform: leaving ? "scale(4)" : "scale(1)",
@@ -145,7 +146,7 @@ export default function EnvelopeIntro({
               }}
             >
               <div
-                className="relative w-[85vw] max-w-[400px] h-[18vh] min-h-[150px] max-h-[200px] rounded-sm shadow-2xl"
+                className="relative w-[300px] h-[150px] md:w-[400px] md:h-[250px] rounded-sm shadow-2xl"
                 style={{ background: NAVY_DEEP }}
               >
                 <div
@@ -187,12 +188,12 @@ export default function EnvelopeIntro({
                     zIndex: phase === "closed" || phase === "open" ? 30 : 5,
                   }}
                 />
-
+                {/* Wax/Seal Lilin */}
                 <button
                   onClick={start}
                   aria-label="Buka undangan"
                   disabled={opened}
-                  className="absolute left-[58%] z-40 flex h-16 w-16 sm:h-16 sm:w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full outline-none transition-all"
+                  className="absolute left-[58%] z-40 flex w-14 h-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full outline-none transition-all"
                   style={{
                     top: "60%", 
                     background: `radial-gradient(circle at 35% 30%, ${GOLD_LIGHT}, ${GOLD} 60%, #9A7B45)`,
@@ -202,7 +203,7 @@ export default function EnvelopeIntro({
                     animation: phase === "closed" ? "seal-pulse 2s ease-in-out infinite" : "none",
                   }}
                 >
-                  <span className={`${script.className} text-xl sm:text-2xl font-bold text-navy-deep drop-shadow-sm`}>
+                  <span className={`${script.className} text-base sm:text-2xl font-bold text-navy-deep drop-shadow-sm`}>
                     D&amp;G
                   </span>
                 </button>
