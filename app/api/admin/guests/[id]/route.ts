@@ -81,12 +81,12 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
     // await dbConnect();
     
-    // Pastikan params di-await jika menggunakan Next.js 15
+    // Ekstrak id dengan melakukan await pada params (sudah benar)
     const { id } = await params; 
 
     // 1. Hapus Data Tamu (Guest)
