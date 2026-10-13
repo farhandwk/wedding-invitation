@@ -41,7 +41,7 @@ export default function MusicPlayer() {
         Tag audio HTML5 disembunyikan. 
         Atribut loop memastikan lagu berputar terus.
       */}
-      <audio ref={audioRef} src="/audio/bgm.mp3" loop preload="auto" />
+      <audio ref={audioRef} src="/audio/bgm.MP3" loop preload="auto" />
 
       {/* 
         Render tombol melayang HANYA jika amplop sudah dibuka.
