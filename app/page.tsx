@@ -1,6 +1,7 @@
 import { Cormorant_Garamond, Pinyon_Script } from "next/font/google";
 import EnvelopeIntro from "@/components/Envelopeintro";
 import { EnvelopeProvider } from "@/src/context/EnvelopeContext"
+import  MusicPlayer  from "@/components/MusicPlayer"
 
 // PAGES IMPORT
 import Quran from "./pages/quran-1";
@@ -35,6 +36,7 @@ export default async function Page({
   const wishesData = await getWishes();
   return (
     <EnvelopeProvider>
+      <MusicPlayer/>
       <EnvelopeIntro guest={to}>
         <main className=" bg-[#FFFFFF] text-[#1F2A48]">
           <Butterfly theme="navy"/>
