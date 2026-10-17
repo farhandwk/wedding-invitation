@@ -11,6 +11,7 @@ import Countdown from "./pages/countdown-4";
 import DatePage from "./pages/date-5"
 import Gift from "./pages/gift-5";
 import Rsvp from "./pages/rsvp-6";
+import AkadNikah from "./pages/akad-nikah";
 
 import { getWishes } from "@/lib/actions";
 
@@ -45,6 +46,7 @@ export default async function Page({
           <Person></Person>
           <Location></Location>
           <Countdown></Countdown>
+          <AkadNikah></AkadNikah>
           <DatePage></DatePage>
           <Gift></Gift>
           <Rsvp guestName={to} initialWishes={wishesData} />

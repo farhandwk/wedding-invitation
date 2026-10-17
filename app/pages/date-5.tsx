@@ -159,7 +159,7 @@ export default function AgendaSection() {
 
         <div className="flex flex-row items-center justify-center gap-3 mb-8 z-10 relative">
           <h2 className={`${serif_2.className} text-3xl sm:text-4xl text-navy font-bold italic`}>
-            Tanggal
+            Tanggal Resepsi
           </h2>
           <CalendarDays className="text-navy" size={28} strokeWidth={1.5} />
         </div>
